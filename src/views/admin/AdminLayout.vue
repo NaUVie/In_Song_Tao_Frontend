@@ -9,13 +9,12 @@ import {
   ChevronRight,
   Menu,
   X,
-  FolderTree // 🔴 Sếp nhớ import thêm icon này nhé
+  FolderTree 
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const isSidebarOpen = ref(true)
 
-// 🔴 THÊM "QUẢN LÝ DANH MỤC" VÀO DANH SÁCH MENU
 const menuItems = [
   { name: 'Tổng quan', icon: LayoutDashboard, route: 'admin-dashboard' },
   { name: 'Quản lý Danh mục', icon: FolderTree, route: 'admin-categories' }, 

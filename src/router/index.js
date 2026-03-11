@@ -79,7 +79,7 @@ const router = createRouter({
           name: 'admin-orders',
           component: () => import('../views/admin/OrderManager.vue')
         },
-        // 🔴 THÊM TRANG QUẢN LÝ DANH MỤC Ở ĐÂY SẾP NHÉ
+
         {
           path: 'categories',
           name: 'admin-categories',
