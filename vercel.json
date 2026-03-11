@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://in-song-tao-backend.onrender.com/api/:path*"
+    },
+    {
+      "source": "/static/:path*",
+      "destination": "https://in-song-tao-backend.onrender.com/static/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
