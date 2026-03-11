@@ -92,7 +92,7 @@ onUnmounted(() => {
           </div>
           <div>
             <div class="text-xs text-gray-500 font-normal">Tư vấn báo giá</div>
-            <div class="text-red-600 font-bold text-sm">0909 111 222</div>
+            <div class="text-red-600 font-bold text-sm">0969 296 540</div>
           </div>
         </div>
 
