@@ -117,7 +117,7 @@ const getStatusLabel = (status) => {
           </div>
           <div>
             <h1 class="text-2xl font-black text-gray-900">Xin chào, {{ userInfo.full_name || 'Khách hàng' }}!</h1>
-            <p class="text-sm text-gray-500 mt-1 tracking-tight">Cảm ơn quý khách đã đồng hành cùng In Song Tạo</p>
+            <p class="text-sm text-gray-500 mt-1 tracking-tight">Cảm ơn quý khách đã đồng hành cùng In ClickIn</p>
           </div>
         </div>
       </div>

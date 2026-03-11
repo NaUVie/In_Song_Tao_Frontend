@@ -50,9 +50,9 @@ onUnmounted(() => {
       <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
         <div class="flex gap-4">
           <span class="font-bold text-red-600 flex items-center pr-2">
-            <Phone class="w-3 h-3 inline mr-1" /> (028) 7106 0707 - (028) 7306 0707
+            <Phone class="w-3 h-3 inline mr-1" /> 0 969 296 540
           </span>
-          <span class="hidden md:inline border-l border-gray-300 pl-2">Email: in@songtao.vn</span>
+          <span class="hidden md:inline border-l border-gray-300 pl-2">Email: demo@clickin.vn</span>
         </div>
         <div class="flex gap-3 items-center font-medium">
           <a href="#" class="hover:text-red-600 transition">Tuyển dụng</a>
@@ -63,13 +63,13 @@ onUnmounted(() => {
     </div>
 
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-6">
-      <router-link to="/" class="flex-shrink-0 flex items-center gap-3">
-         <img src="https://songtao.vn/images/logo.png" alt="Song Tao Logo" class="h-12 object-contain" @error="$event.target.style.display='none'" />
-         <div>
-           <div class="text-red-600 font-black text-2xl tracking-tight leading-4 mt-1">IN SONG TẠO</div>
-           <div class="text-[10px] uppercase text-gray-500 font-bold tracking-widest">Demo website</div>
-         </div>
-      </router-link>
+<router-link to="/" class="flex-shrink-0 flex items-center h-12 md:h-14 overflow-hidden">
+   <img 
+     src="/images/clickin.svg" 
+     alt="ClickIn Logo" 
+     class="h-[200%] md:h-[250%] w-auto object-contain object-left -ml-3 md:-ml-8" 
+   />
+</router-link>
 
       <div class="flex-1 max-w-xl pl-8 relative hidden md:block">
         <div class="flex relative group">

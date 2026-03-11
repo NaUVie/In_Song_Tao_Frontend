@@ -5,7 +5,7 @@
       <div>
         <h3 class="text-white text-lg font-bold mb-6 uppercase tracking-wider">Về chúng tôi</h3>
         <p class="text-sm leading-relaxed mb-6">
-          In Nhanh TYD cung cấp giải pháp in ấn toàn diện cho doanh nghiệp. Với công nghệ in hiện đại và đội ngũ chuyên nghiệp, chúng tôi cam kết mang đến sản phẩm chất lượng nhất.
+          Chúng tôi cung cấp giải pháp in ấn toàn diện cho doanh nghiệp. Với công nghệ in hiện đại và đội ngũ chuyên nghiệp, chúng tôi cam kết mang đến sản phẩm chất lượng nhất.
         </p>
         <div class="flex gap-4">
           <!-- Social Icons Placeholder -->
@@ -20,24 +20,24 @@
         <h3 class="text-white text-lg font-bold mb-6 uppercase tracking-wider">Liên hệ</h3>
         <ul class="space-y-4 text-sm text-gray-400">
           <li class="flex gap-3 items-start">
-            <span class="text-white font-bold whitespace-nowrap">HCM 1:</span>
-            <span>71 Đường 25, Phường Tân Hưng, Quận 7, TP.HCM</span>
+            <span class="text-white font-bold whitespace-nowrap">HO CHI MINH CITY:</span>
+            <span>28, Road 270A, Phuoc Long A Ward, Thu Duc City, HCM</span>
           </li>
           <li class="flex gap-3 items-start">
-            <span class="text-white font-bold whitespace-nowrap">HCM 2:</span>
-            <span>211 Nguyễn Trọng Tuyển, Phường 8, Q.Phú Nhuận, TP.HCM</span>
+            <span class="text-white font-bold whitespace-nowrap">DONG NAI PROVINCE:</span>
+            <span>253 Pham Van Thuan Street, Tam Hiep Ward, Dong Nai</span>
           </li>
           <li class="flex gap-3">
             <span class="text-white font-bold">Hotline:</span>
-            <span>(028) 7106 0707 - (028) 7306 0707</span>
+            <span>0969296540</span>
           </li>
           <li class="flex gap-3">
             <span class="text-white font-bold">Email:</span>
-            <span>in@songtao.vn</span>
+            <span>demo@clickin.vn</span>
           </li>
           <li class="flex gap-3">
             <span class="text-white font-bold">Web:</span>
-            <span>www.songtao.vn</span>
+            <span>www.clickin.vn</span>
           </li>
         </ul>
       </div>
@@ -67,7 +67,7 @@
 
     <!-- Bottom Bar -->
     <div class="border-t border-gray-800 pt-8 text-center text-xs text-gray-500">
-      <p>&copy; 2024 Song Tạo Printing Services. All rights reserved.</p>
+      <p>&copy; 2024 ClickIn Printing Services. All rights reserved.</p>
     </div>
   </footer>
 </template>

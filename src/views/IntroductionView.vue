@@ -14,19 +14,19 @@ import MainLayout from '../components/layout/MainLayout.vue'
         </nav>
 
         <div class="bg-white rounded-xl shadow-sm p-8 md:p-12">
-          <h1 class="text-3xl font-bold text-gray-900 mb-8 pb-4 border-b border-gray-100">GIỚI THIỆU VỀ SONG TẠO</h1>
+          <h1 class="text-3xl font-bold text-gray-900 mb-8 pb-4 border-b border-gray-100">GIỚI THIỆU VỀ ClickIn</h1>
           
           <div class="prose max-w-none text-gray-700 leading-relaxed space-y-6">
             <p class="font-semibold text-lg">Kính Chào Quý Khách!</p>
             
             <p>
-              Lời đầu tiên, <strong class="text-primary-600">Công ty TNHH Song Tạo</strong> xin gửi tới Quý khách hàng lời chúc sức khỏe và lời chào trân trọng nhất.
+              Lời đầu tiên, <strong class="text-primary-600">Công ty TNHH ClickIn</strong> xin gửi tới Quý khách hàng lời chúc sức khỏe và lời chào trân trọng nhất.
             </p>
 
             <p>
               Công ty chúng tôi hoạt động trong lĩnh vực: <strong>THIẾT KẾ - IN ẤN - QUẢNG CÁO</strong>.
               Với đội ngũ nhân viên thiết kế chuyên nghiệp, năng động, sáng tạo cùng hệ thống máy in hiện đại, 
-              Song Tạo cam kết mang đến cho Quý khách những sản phẩm chất lượng cao với giá thành hợp lý nhất.
+              ClickIn cam kết mang đến cho Quý khách những sản phẩm chất lượng cao với giá thành hợp lý nhất.
             </p>
 
             <h3 class="text-xl font-bold text-gray-800 mt-8">SỨ MỆNH CỦA CHÚNG TÔI</h3>
@@ -47,7 +47,7 @@ import MainLayout from '../components/layout/MainLayout.vue'
               <li>In Lịch tết, Bao lì xì, Thiệp mời...</li>
             </ul>
 
-            <h3 class="text-xl font-bold text-gray-800 mt-8">TẠI SAO CHỌN SONG TẠO?</h3>
+            <h3 class="text-xl font-bold text-gray-800 mt-8">TẠI SAO CHỌN ClickIn?</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               <div class="border rounded-lg p-4 bg-blue-50">
                 <h4 class="font-bold text-blue-800 mb-2">⭐ Chất lượng hàng đầu</h4>

@@ -50,7 +50,7 @@ import MainLayout from '../components/layout/MainLayout.vue'
                       <strong>Thông tin chuyển khoản:</strong><br>
                       Ngân hàng: Vietcombank<br>
                       Số TK: 0071000xxxxxxx<br>
-                      Chủ TK: CÔNG TY TNHH SONG TẠO
+                      Chủ TK: CÔNG TY TNHH ClickIn<br>
                     </p>
                   </div>
                 </div>
