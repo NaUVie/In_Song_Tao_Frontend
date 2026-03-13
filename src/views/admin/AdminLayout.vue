@@ -17,6 +17,7 @@ const isSidebarOpen = ref(true)
 
 const menuItems = [
   { name: 'Tổng quan', icon: LayoutDashboard, route: 'admin-dashboard' },
+  { name: 'Banner', icon: LayoutDashboard, route: 'AdminBanners' },
   { name: 'Quản lý Danh mục', icon: FolderTree, route: 'admin-categories' }, 
   { name: 'Quản lý Dịch vụ', icon: Package, route: 'admin-services' },
   { name: 'Quản lý Đơn hàng', icon: ShoppingCart, route: 'admin-orders' },

@@ -84,7 +84,13 @@ const router = createRouter({
           path: 'categories',
           name: 'admin-categories',
           component: () => import('../views/admin/CategoryManager.vue')
-        }
+        },
+     {
+        path: '/admin/banners',
+        name: 'AdminBanners',
+        component: () => import('@/views/admin/BannerManager.vue')
+      }
+        
       ]
     }
   ]

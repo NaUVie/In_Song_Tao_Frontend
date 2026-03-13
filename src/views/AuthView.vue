@@ -23,16 +23,13 @@ const handleAuth = async () => {
   error.value = ''
   try {
     if (isLogin.value) {
-      // 1. Thực hiện Login và lấy thông tin User về
   const user = await store.login(form.email, form.password)
 
-// Debug phát cho chắc ăn, mở F12 xem nó ra cái gì nhé
 console.log("Dữ liệu User bốc được:", user)
 
 const redirectPath = route.query.redirect || '/'
 
-// Sửa lại điều kiện này: ép kiểu Boolean luôn cho chắc
-const isAdmin = !!user?.is_admin // Chấp hết true, 1, "1", "true"
+const isAdmin = !!user?.is_admin 
 
 if (redirectPath.includes('/admin') && !isAdmin) {
     error.value = 'Tài khoản này không có quyền truy cập khu vực Admin!'
@@ -40,7 +37,6 @@ if (redirectPath.includes('/admin') && !isAdmin) {
     setTimeout(() => router.push('/'), 2000)
     return 
 }
-      // 3. Nếu mọi thứ ổn thì mới đi tiếp
       router.push(redirectPath)
       
     } else {

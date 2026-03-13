@@ -2,12 +2,11 @@ import axios from 'axios'
 
 /**
  * TỰ ĐỘNG NHẬN DIỆN BASE URL:
- * - Trên Vercel: Sẽ lấy link từ biến VITE_API_BASE_URL + '/api'
- * - Ở Local: Sẽ dùng '/api' để chạy qua Proxy trong vite.config.js
+ * - Do cả Vercel (rewrites) và Vite (proxy) đều dùng '/api' làm mốc để bẻ lái request.
+ * - Nên ở đây ta chỉ cần lấy đúng giá trị từ .env, hoặc mặc định là '/api'.
+ * - KHÔNG nối thêm '/api' nữa để tránh lỗi thành '/api/api'.
  */
-const baseURL = import.meta.env.VITE_API_BASE_URL 
-  ? `${import.meta.env.VITE_API_BASE_URL}/api` 
-  : '/api'
+const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 const instance = axios.create({
   baseURL: baseURL,

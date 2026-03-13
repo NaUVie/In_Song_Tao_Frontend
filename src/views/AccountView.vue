@@ -12,7 +12,6 @@ const router = useRouter()
 const activeTab = ref('profile') 
 const loadingOrders = ref(false)
 
-// Logic cho Modal chi tiết
 const isDetailOpen = ref(false)
 const selectedOrder = ref(null)
 
@@ -26,7 +25,6 @@ const closeOrderDetail = () => {
   selectedOrder.value = null
 }
 
-// Hàm lọc bỏ các field không cần thiết khi hiện list options trong Grid
 const filterOptions = (options) => {
   if (!options) return {}
   const filtered = { ...options }
@@ -35,7 +33,6 @@ const filterOptions = (options) => {
   return filtered
 }
 
-// Dữ liệu người dùng
 const userInfo = ref({
   full_name: '',
   email: '',

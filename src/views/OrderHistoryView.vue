@@ -18,7 +18,6 @@ const fetchOrders = async () => {
   }
 }
 
-// 🔴 Cập nhật hàm formatOptions để "né" mọi loại lỗi dữ liệu
 const formatOptions = (options) => {
   if (!options) return 'Tiêu chuẩn'
   let data = options
@@ -165,7 +164,6 @@ onMounted(fetchOrders)
 </template>
 
 <style scoped>
-/* Hiệu ứng hover cho toàn bộ khối order */
 .group:hover {
   transform: translateY(-2px);
 }

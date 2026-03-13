@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-// import axios from 'axios'
 import PriceCalculator from '../components/PriceCalculator.vue'
 import MainLayout from '../components/layout/MainLayout.vue'
 import axios from '@/utils/axios'
@@ -11,10 +10,8 @@ const loading = ref(true)
 
 onMounted(async () => {
   try {
-    // 1. ĐÃ SỬA: Gọi API trực tiếp vào Backend Python 
    const response = await axios.get(`/services/${route.params.slug}`)
     
-    // In ra F12 để ông dễ dàng check xem Backend nhả data ra đủ bảng option và price chưa
     console.log("Dữ liệu Backend trả về nè:", response.data)
     
     service.value = response.data

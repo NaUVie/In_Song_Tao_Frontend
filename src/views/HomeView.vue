@@ -3,24 +3,38 @@ import { onMounted, onUnmounted, computed, ref } from 'vue'
 import { useAppStore } from '../stores/app'
 import MainLayout from '../components/layout/MainLayout.vue'
 import { ArrowRight, LayoutGrid, Zap, Star, ShoppingCart, ShieldCheck, Clock } from 'lucide-vue-next'
+import axios from '@/utils/axios'
 
 const store = useAppStore()
 
-// Dữ liệu Slider
-const sliderImages = ref([
-  'https://songtao.vn/PhoTos/Categories/Large/BannerTop/decal-giay-km-15.png',
-  'https://songtao.vn/PhoTos/Categories/Small/hinh%20trang%20chu/hop-C300-giam-10.png'
-])
-
+// --- DỮ LIỆU BANNER TỪ DATABASE ---
+const banners = ref([])
 const currentSlide = ref(0)
 let slideInterval = null
 
+// Tách banner theo vị trí (top, mid)
+const topBanners = computed(() => banners.value.filter(b => b.position === 'top'))
+const midBanner = computed(() => banners.value.find(b => b.position === 'mid'))
+
+// Gọi API lấy danh sách Banner
+const fetchBanners = async () => {
+  try {
+    const response = await axios.get('/banners')
+    // Chỉ lấy những banner đang được bật
+    banners.value = response.data.filter(b => b.is_active)
+  } catch (error) {
+    console.error('Lỗi khi tải banner:', error)
+  }
+}
+
 const nextSlide = () => {
-  currentSlide.value = (currentSlide.value + 1) % sliderImages.value.length
+  if (topBanners.value.length === 0) return
+  currentSlide.value = (currentSlide.value + 1) % topBanners.value.length
 }
 
 onMounted(() => {
   store.fetchCategories()
+  fetchBanners()
   slideInterval = setInterval(nextSlide, 5000)
 })
 
@@ -28,6 +42,7 @@ onUnmounted(() => {
   if (slideInterval) clearInterval(slideInterval)
 })
 
+// --- CÁC LOGIC KHÁC GIỮ NGUYÊN ---
 const hotCategories = computed(() => {
   if (!store.categories) return []
   const hotSlugs = ['nhan-decal', 'bao-thu', 'danh-thiep', 'hop-giay']
@@ -45,22 +60,31 @@ const allFeaturedServices = computed(() => {
   <MainLayout>
     <div class="bg-gray-50 min-h-screen pb-24 font-sans text-slate-900 overflow-x-hidden">
       
-      <section class="relative w-full mb-10 md:mb-16 group overflow-hidden bg-white shadow-sm border-b border-gray-200 grid">
-        <div 
-          v-for="(img, index) in sliderImages" 
-          :key="index"
-          class="col-start-1 row-start-1 transition-opacity duration-1000 ease-in-out"
-          :class="currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'"
-        >
-          <img :src="img" class="w-full h-auto block" alt="Banner" />
+      <section v-if="topBanners.length > 0" class="relative w-full mb-10 md:mb-16 group bg-white rounded-b-2xl md:rounded-b-[2.5rem] shadow-sm overflow-hidden border-b border-gray-100">
+        <div class="grid w-full">
+          <div 
+            v-for="(banner, index) in topBanners" 
+            :key="banner.id || index"
+            class="col-start-1 row-start-1 transition-opacity duration-1000 ease-in-out w-full"
+            :class="currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'"
+          >
+            <component 
+              :is="banner.link ? (banner.link.startsWith('http') ? 'a' : 'router-link') : 'div'" 
+              :to="banner.link || '#'"
+              :href="banner.link || '#'"
+              class="block w-full"
+            >
+              <img :src="banner.image_url" :alt="banner.title || 'Slide'" class="w-full h-auto block" />
+            </component>
+          </div>
         </div>
 
-        <div class="absolute bottom-2 md:bottom-5 left-0 right-0 flex justify-center gap-2 md:gap-3 z-20">
+        <div class="absolute bottom-3 md:bottom-6 left-0 right-0 flex justify-center gap-2 md:gap-3 z-20">
           <button 
-            v-for="(_, index) in sliderImages" 
-            :key="index"
+            v-for="(_, index) in topBanners" 
+            :key="'dot-' + index"
             @click="currentSlide = index"
-            class="h-1.5 md:h-2 rounded-full transition-all duration-500 shadow-[0_0_5px_rgba(0,0,0,0.3)] border border-white/60"
+            class="h-1.5 md:h-2 rounded-full transition-all duration-500 shadow-md border border-white/60"
             :class="currentSlide === index ? 'w-8 md:w-12 bg-red-600' : 'w-2 md:w-3 bg-white/80 hover:bg-white'"
           ></button>
         </div>
@@ -121,10 +145,17 @@ const allFeaturedServices = computed(() => {
           </div>
         </div>
 
-        <router-link to="/services" class="block relative w-full rounded-[2.5rem] mb-24 overflow-hidden shadow-xl group cursor-pointer aspect-[3/1] md:aspect-[5/1] bg-slate-900">
-          <img src="https://i.ibb.co/LXfQxtjn/Gemini-Generated-Image-fbqiv8fbqiv8fbqi.png" class="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105" />
-          <div class="absolute inset-0 bg-gray-900/20 group-hover:bg-gray-900/10 transition-colors duration-500"></div>
-        </router-link>
+        <div v-if="midBanner" class="w-full mb-24 relative z-30 group rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-md bg-white border border-gray-100">
+          <component 
+            :is="midBanner.link ? (midBanner.link.startsWith('http') ? 'a' : 'router-link') : 'div'" 
+            :to="midBanner.link || '#'"
+            :href="midBanner.link || '#'"
+            class="block w-full"
+          >
+            <img :src="midBanner.image_url" :alt="midBanner.title || 'Mid Banner'" class="w-full h-auto block group-hover:scale-105 transition-transform duration-500" />
+            <div class="absolute inset-0 bg-gray-900/0 group-hover:bg-gray-900/5 transition-colors duration-500"></div>
+          </component>
+        </div>
 
         <div class="mb-12">
           <div class="flex flex-col md:flex-row items-end justify-between gap-6 mb-12">

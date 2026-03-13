@@ -1,7 +1,6 @@
 <script setup>
 import { useRoute } from 'vue-router'
 
-// Lấy thông tin đường dẫn hiện tại
 const route = useRoute()
 
 const navItems = [
@@ -13,13 +12,10 @@ const navItems = [
   { name: 'Liên hệ', path: '/contact' }
 ]
 
-// Hàm bắt chính xác 100% trang đang đứng
 const isActive = (path) => {
-  // Nếu là trang chủ thì phải khớp chính xác '/'
   if (path === '/') {
     return route.path === '/'
   }
-  // Các trang khác thì chỉ cần chứa đường dẫn (ví dụ: /services/decal vẫn làm sáng menu Dịch vụ in)
   return route.path.startsWith(path)
 }
 </script>

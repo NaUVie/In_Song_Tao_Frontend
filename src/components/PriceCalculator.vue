@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-// CHỈ DÙNG MỘT DÒNG IMPORT NÀY: Dùng instance đã cấu hình sẵn baseURL và Token
 import axios from '@/utils/axios' 
 import { ShoppingCart, Check, UploadCloud, FileImage, PenTool, X, ChevronRight } from 'lucide-vue-next'
 import { useAppStore } from '../stores/app'
@@ -21,7 +20,6 @@ const selectedQuantity = ref(0)
 const totalPrice = ref(0)
 const calculating = ref(false)
 
-// Khởi tạo mặc định khi service thay đổi
 watch(() => props.service, (newService) => {
   if (newService && newService.option_groups) {
     selectedOptions.value = {}
@@ -38,14 +36,12 @@ watch(() => props.service, (newService) => {
   }
 }, { immediate: true })
 
-// Gọi API tính giá (Dùng endpoint tương đối /services/...)
 let timeoutId = null
 const calculatePrice = async () => {
   if (!selectedQuantity.value || selectedQuantity.value <= 0) return
   
   calculating.value = true
   try {
-    // SỬA TẠI ĐÂY: Bỏ link cứng, Axios sẽ tự cộng thêm /api/ vào trước
     const response = await axios.post('/services/calculate-price', {
       service_id: props.service.id,
       quantity: selectedQuantity.value,
@@ -59,7 +55,6 @@ const calculatePrice = async () => {
   }
 }
 
-// Watcher có cài Debounce 300ms để tránh spam API
 watch([selectedQuantity, selectedOptions], () => {
   clearTimeout(timeoutId)
   timeoutId = setTimeout(() => {
@@ -71,7 +66,6 @@ const designRequest = ref(false)
 const note = ref('')
 const designFee = 200000
 
-// Xử lý Upload file
 const file = ref(null)
 const filePreview = ref(null)
 const fileInput = ref(null)
