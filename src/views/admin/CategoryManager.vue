@@ -148,9 +148,9 @@ onMounted(fetchCategories)
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
       <div>
         <h1 class="text-3xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-3">
-          <Layers class="w-8 h-8 text-red-600" /> Quản lý Danh Mục
+          <h1 class="text-3xl font-black uppercase tracking-tighter italic text-slate-900">Quản lý Danh Mục</h1>
         </h1>
-        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1 ml-11">Cấu trúc phân loại hệ thống</p>
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1 ">Cấu trúc phân loại hệ thống</p>
       </div>
       <div class="flex gap-3 w-full md:w-auto">
         <button @click="fetchCategories" class="p-3 bg-white shadow-sm border border-gray-100 rounded-2xl text-slate-500 hover:text-red-600 hover:shadow-md transition-all active:scale-95">

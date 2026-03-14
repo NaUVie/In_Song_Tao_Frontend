@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import axios from '@/utils/axios' 
-import { ShoppingCart, Check, UploadCloud, FileImage, PenTool, X, ChevronRight } from 'lucide-vue-next'
+import { ShoppingCart, Check, UploadCloud, FileImage, PenTool, X, ChevronRight, Loader2 } from 'lucide-vue-next'
 import { useAppStore } from '../stores/app'
 import { useRouter } from 'vue-router'
 
@@ -19,6 +19,7 @@ const selectedOptions = ref({})
 const selectedQuantity = ref(0)
 const totalPrice = ref(0)
 const calculating = ref(false)
+const isUploading = ref(false) // Thêm biến trạng thái upload
 
 watch(() => props.service, (newService) => {
   if (newService && newService.option_groups) {
@@ -73,6 +74,13 @@ const fileInput = ref(null)
 const handleFileUpload = (event) => {
   const selectedFile = event.target.files[0]
   if (selectedFile) {
+    // Validate dung lượng (Ví dụ: Max 50MB)
+    if (selectedFile.size > 50 * 1024 * 1024) {
+      alert('File quá lớn! Vui lòng chọn file dưới 50MB.')
+      event.target.value = ''
+      return
+    }
+
     file.value = selectedFile
     if (selectedFile.type.startsWith('image/')) {
       filePreview.value = URL.createObjectURL(selectedFile)
@@ -97,7 +105,35 @@ const unitPrice = computed(() => {
   return (totalPrice.value / selectedQuantity.value).toFixed(0)
 })
 
-const handleAddToCart = () => {
+// HÀM XỬ LÝ ĐẶT HÀNG (ĐÃ THÊM UPLOAD FILE)
+const handleAddToCart = async () => {
+  let fileUrl = null;
+
+  // Nếu có file, thực hiện upload lên server trước
+  if (file.value) {
+    isUploading.value = true;
+    try {
+      const formData = new FormData();
+      formData.append('file', file.value);
+
+      // 👉 THAY URL '/upload' THÀNH API UPLOAD THỰC TẾ CỦA ÔNG
+    const response = await axios.post('/admin/upload-artwork', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+      
+      // Lấy link file trả về từ Backend (Tùy cấu trúc JSON của ông)
+      fileUrl = response.data.url; 
+      
+    } catch (error) {
+      console.error('Lỗi upload file:', error);
+      alert('Tải file lên thất bại! Vui lòng thử lại.');
+      isUploading.value = false;
+      return; // Dừng lại, không cho add vào giỏ hàng
+    }
+    isUploading.value = false;
+  }
+
+// Đẩy data vào Store
   store.addToCart({
     service: props.service,
     quantity: selectedQuantity.value,
@@ -105,13 +141,13 @@ const handleAddToCart = () => {
     totalPrice: finalTotalPrice.value,
     designRequest: designRequest.value,
     note: note.value,
-    file: file.value
+    artwork_url: fileUrl // <--- Đổi tên ở đây cho chuẩn với cột trong DB
   })
+  
   alert('Đã thêm vào giỏ hàng thành công!')
   router.push('/cart')
 }
 </script>
-
 <template>
   <div v-if="service" class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 sticky top-24 overflow-hidden flex flex-col max-h-[85vh]">
     
@@ -277,13 +313,19 @@ const handleAddToCart = () => {
         </div>
       </div>
 
-      <button 
+<button 
         @click="handleAddToCart"
-        :disabled="calculating || finalTotalPrice === 0"
+        :disabled="calculating || finalTotalPrice === 0 || isUploading"
         class="w-full bg-red-600 text-white py-4.5 rounded-2xl font-bold text-lg hover:bg-red-700 disabled:bg-gray-300 disabled:text-gray-500 transition-all flex items-center justify-center gap-3 shadow-[0_8px_20px_rgb(220,38,38,0.3)] hover:shadow-[0_8px_25px_rgb(220,38,38,0.4)] hover:-translate-y-1 active:translate-y-0 active:shadow-none"
       >
-        <ShoppingCart class="w-5 h-5" />
-        ĐẶT HÀNG NGAY
+        <template v-if="isUploading">
+          <Loader2 class="w-5 h-5 animate-spin" />
+          ĐANG TẢI FILE LÊN...
+        </template>
+        <template v-else>
+          <ShoppingCart class="w-5 h-5" />
+          ĐẶT HÀNG NGAY
+        </template>
       </button>
     </div>
   </div>

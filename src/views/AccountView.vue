@@ -94,13 +94,28 @@ const handleLogout = () => {
 }
 
 const getStatusLabel = (status) => {
+  const s = (status || '').toString().toLowerCase().trim()
   const map = {
     'pending': { text: 'Chờ duyệt', class: 'bg-yellow-100 text-yellow-700' },
     'processing': { text: 'Đang xử lý', class: 'bg-blue-100 text-blue-700' },
+    'printing': { text: 'Đang in ấn', class: 'bg-purple-100 text-purple-700' },
     'completed': { text: 'Đã giao hàng', class: 'bg-green-100 text-green-700' },
     'cancelled': { text: 'Đã hủy', class: 'bg-red-100 text-red-700' }
   }
-  return map[status] || { text: status, class: 'bg-gray-100 text-gray-700' }
+  return map[s] || { text: status, class: 'bg-gray-100 text-gray-700' }
+}
+
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return '---'
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return '---'
+  return date.toLocaleString('vi-VN', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric' 
+  })
 }
 </script>
 
@@ -157,7 +172,7 @@ const getStatusLabel = (status) => {
               </div>
               <div class="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
                 <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-red-500 shadow-sm shrink-0"><MapPin class="w-5 h-5" /></div>
-                <div><div class="text-xs text-gray-400 font-bold uppercase mb-1">Địa chỉ nhận hàng</div><div class="text-gray-900 font-bold">{{ userInfo.address || 'Chưa cập nhật' }}</div></div>
+                <div><div class="text-xs text-gray-400 font-bold uppercase mb-1">Địa chỉ mặc định</div><div class="text-gray-900 font-bold">{{ userInfo.address || 'Chưa cập nhật' }}</div></div>
               </div>
             </div>
           </div>
@@ -165,7 +180,7 @@ const getStatusLabel = (status) => {
           <div v-if="activeTab === 'orders'" class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div class="p-8 border-b border-gray-100 flex justify-between items-center">
               <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Lịch sử đơn hàng</h2>
-              <button @click="fetchMyOrders" class="text-sm text-gray-400 hover:text-red-600 flex items-center gap-1">Làm mới</button>
+              <button @click="fetchMyOrders" class="text-sm text-gray-400 hover:text-red-600 flex items-center gap-1 font-bold">Làm mới</button>
             </div>
             
             <div v-if="loadingOrders" class="py-20 flex flex-col items-center justify-center text-gray-400">
@@ -183,8 +198,9 @@ const getStatusLabel = (status) => {
                 <thead>
                   <tr class="bg-gray-50 text-gray-400 text-[11px] uppercase tracking-[0.1em] font-black">
                     <th class="px-8 py-5">Mã đơn</th>
-                    <th class="px-8 py-5">Sản phẩm tiêu biểu</th>
-                    <th class="px-8 py-5">Tổng tiền</th>
+                    <th class="px-8 py-5">Ngày đặt</th>
+                    <th class="px-8 py-5">Sản phẩm</th>
+                    <th class="px-8 py-5 text-right">Tổng tiền</th>
                     <th class="px-8 py-5 text-center">Trạng thái</th>
                     <th class="px-8 py-5"></th>
                   </tr>
@@ -192,20 +208,16 @@ const getStatusLabel = (status) => {
                 <tbody class="divide-y divide-gray-100">
                   <tr v-for="order in myOrders" :key="order.id" class="hover:bg-gray-50 transition-all group cursor-pointer" @click="openOrderDetail(order)">
                     <td class="px-8 py-6 font-black text-gray-900 text-lg">#{{ order.id }}</td>
+                    <td class="px-8 py-6 text-sm font-bold text-gray-500">{{ formatDateTime(order.created_at) }}</td>
                     <td class="px-8 py-6">
-                      <div class="flex flex-col">
-                        <div class="text-sm font-bold flex items-center gap-2" :class="order.items[0]?.service?.is_deleted ? 'text-gray-400' : 'text-gray-700'">
-                          {{ order.items && order.items.length > 0 ? (order.items[0].service?.name || 'Sản phẩm #' + order.items[0].service_id) : 'N/A' }}
-                          
-                          <span v-if="order.items[0]?.service?.is_deleted" class="text-[8px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black uppercase">Ngừng</span>
-                          
-                          <span v-if="order.items.length > 1" class="text-gray-400 font-normal ml-1">(+{{ order.items.length - 1 }} món khác)</span>
-                        </div>
+                      <div class="text-sm font-bold text-gray-700">
+                        {{ order.items[0]?.service?.name || 'Sản phẩm #' + order.items[0]?.service_id }}
+                        <span v-if="order.items.length > 1" class="text-gray-400 font-normal">(+{{ order.items.length - 1 }})</span>
                       </div>
                     </td>
-                    <td class="px-8 py-6 font-black text-red-600 text-lg">{{ order.total_price.toLocaleString() }}đ</td>
+                    <td class="px-8 py-6 font-black text-red-600 text-lg text-right">{{ order.total_price.toLocaleString() }}đ</td>
                     <td class="px-8 py-6 text-center">
-                      <span :class="['px-3 py-1.5 text-[10px] font-black rounded-lg uppercase tracking-wider shadow-sm', getStatusLabel(order.status).class]">
+                      <span :class="['px-3 py-1.5 text-[10px] font-black rounded-lg uppercase tracking-wider', getStatusLabel(order.status).class]">
                         {{ getStatusLabel(order.status).text }}
                       </span>
                     </td>
@@ -228,7 +240,9 @@ const getStatusLabel = (status) => {
         <div class="bg-red-600 p-6 text-white flex justify-between items-center shrink-0">
           <div>
             <h3 class="text-xl font-black uppercase tracking-tight">Chi tiết đơn #{{ selectedOrder.id }}</h3>
-            <p class="text-[10px] opacity-80 mt-1 font-black tracking-[0.2em] uppercase">Trạng thái: {{ getStatusLabel(selectedOrder.status).text }}</p>
+            <p class="text-[10px] opacity-80 mt-1 font-black uppercase tracking-widest">
+              {{ getStatusLabel(selectedOrder.status).text }} | {{ formatDateTime(selectedOrder.created_at) }}
+            </p>
           </div>
           <button @click="closeOrderDetail" class="hover:bg-white/20 p-2 rounded-full transition-colors">
             <X class="w-6 h-6" />
@@ -237,6 +251,27 @@ const getStatusLabel = (status) => {
 
         <div class="p-8 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/50">
           <div class="space-y-6">
+            
+            <div class="bg-white rounded-3xl p-6 border border-red-100 shadow-sm">
+               <h4 class="text-xs font-black uppercase text-red-600 mb-4 flex items-center gap-2">
+                 <MapPin class="w-4 h-4" /> Thông tin nhận hàng
+               </h4>
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div>
+                   <div class="text-[10px] text-gray-400 font-bold uppercase mb-1">Người nhận</div>
+                   <div class="text-sm font-bold text-gray-900 uppercase">{{ selectedOrder.recipient_name || userInfo.full_name }}</div>
+                 </div>
+                 <div>
+                   <div class="text-[10px] text-gray-400 font-bold uppercase mb-1">Số điện thoại</div>
+                   <div class="text-sm font-bold text-red-600">{{ selectedOrder.phone_number || userInfo.phone }}</div>
+                 </div>
+                 <div class="md:col-span-2 pt-2 border-t border-gray-50">
+                   <div class="text-[10px] text-gray-400 font-bold uppercase mb-1">Địa chỉ giao hàng</div>
+                   <div class="text-sm font-bold text-gray-700 leading-relaxed">{{ selectedOrder.address || userInfo.address }}</div>
+                 </div>
+               </div>
+            </div>
+
             <div v-for="item in selectedOrder.items" :key="item.id" class="border border-gray-100 bg-white rounded-3xl p-6 shadow-sm">
               <div class="flex gap-5 items-start mb-6">
                 <div :class="['w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center p-2', item.service?.is_deleted ? 'grayscale opacity-40' : '']">
@@ -249,15 +284,9 @@ const getStatusLabel = (status) => {
                     <h4 :class="['font-black text-lg uppercase leading-none', item.service?.is_deleted ? 'text-gray-400 line-through' : 'text-gray-900']">
                       {{ item.service?.name || 'Sản phẩm #' + item.service_id }}
                     </h4>
-                    
-                    <span v-if="item.service?.is_deleted" class="bg-red-600 text-white text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter animate-pulse shadow-md">
-                      Ngừng kinh doanh
-                    </span>
+                    <span v-if="item.service?.is_deleted" class="bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase">Ngừng</span>
                   </div>
-
-                  <div class="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-wider">
-                    <Package class="w-4 h-4" /> Số lượng: {{ item.quantity.toLocaleString() }}
-                  </div>
+                  <div class="text-gray-400 font-bold text-xs uppercase">SL: {{ item.quantity.toLocaleString() }}</div>
                 </div>
                 <div class="text-right">
                   <span class="text-red-600 font-black text-xl">{{ item.item_price.toLocaleString() }}đ</span>
@@ -266,14 +295,14 @@ const getStatusLabel = (status) => {
 
               <div class="grid grid-cols-2 gap-3 mb-6">
                 <div v-for="(val, key) in filterOptions(item.selected_options)" :key="key" class="bg-gray-50/50 px-4 py-3 rounded-2xl border border-gray-100">
-                  <span class="text-[9px] text-gray-400 font-black uppercase block leading-none mb-1 tracking-widest">{{ key }}</span>
+                  <span class="text-[9px] text-gray-400 font-black uppercase block leading-none mb-1">{{ key }}</span>
                   <span class="text-sm font-bold text-gray-800">{{ val }}</span>
                 </div>
               </div>
 
               <div class="space-y-3 pt-4 border-t border-dashed border-gray-100">
                 <div v-if="item.selected_options?.design_request" class="flex items-center gap-2 text-purple-600 text-[10px] font-black uppercase bg-purple-50 px-3 py-2 rounded-lg inline-flex">
-                  <PenTool class="w-4 h-4" /> Có yêu cầu thiết kế (+200k)
+                  <PenTool class="w-4 h-4" /> Yêu cầu thiết kế (+200k)
                 </div>
                 <div v-if="item.selected_options?.note" class="flex items-start gap-2 text-sm text-gray-600 italic bg-gray-50 p-4 rounded-2xl border border-gray-100">
                   <FileText class="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
@@ -285,7 +314,7 @@ const getStatusLabel = (status) => {
         </div>
 
         <div class="p-8 bg-white border-t border-gray-100 flex justify-between items-center shrink-0">
-          <div class="text-gray-400 text-xs font-black uppercase tracking-[0.2em]">Tổng thanh toán:</div>
+          <div class="text-gray-400 text-xs font-black uppercase tracking-widest">Tổng thanh toán:</div>
           <div class="text-3xl font-black text-red-600">{{ selectedOrder.total_price.toLocaleString() }}đ</div>
         </div>
       </div>

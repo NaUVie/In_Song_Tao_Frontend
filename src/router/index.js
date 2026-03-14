@@ -89,7 +89,12 @@ const router = createRouter({
         path: '/admin/banners',
         name: 'AdminBanners',
         component: () => import('@/views/admin/BannerManager.vue')
-      }
+      },
+      {
+  path: '/admin/news',
+  name: 'NewsManager',
+  component: () => import('../views/admin/NewsManager.vue')
+}
         
       ]
     }

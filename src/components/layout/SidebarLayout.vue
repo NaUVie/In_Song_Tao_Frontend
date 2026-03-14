@@ -2,10 +2,12 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useAppStore } from '../../stores/app'
 import { useRoute } from 'vue-router'
+import { Layers, Menu, X, ChevronDown } from 'lucide-vue-next'
 
 const store = useAppStore()
 const route = useRoute()
 const activeGroup = ref('')
+const isMobileSidebarOpen = ref(false) // Thêm biến quản lý nút 3 gạch
 
 onMounted(() => {
   if (store.categories.length === 0) {
@@ -29,7 +31,6 @@ const groupedCategories = computed(() => {
 
   const matchedCategoryIds = new Set()
 
-  // 1. Phân loại theo nhóm đã định nghĩa
   const groups = categoryGroups.map(group => {
     const items = store.categories.filter(cat => {
       if (group.slugs.includes(cat.slug)) {
@@ -41,7 +42,6 @@ const groupedCategories = computed(() => {
     return { ...group, items }
   }).filter(group => group.items.length > 0)
 
-  // 2. Gom các danh mục còn lại (không nằm trong danh sách trên) vào nhóm "Khác"
   const otherItems = store.categories.filter(cat => !matchedCategoryIds.has(cat.id))
   if (otherItems.length > 0) {
     groups.push({ name: 'Khác', items: otherItems })
@@ -50,7 +50,6 @@ const groupedCategories = computed(() => {
   return groups
 })
 
-// Tự động mở Group chứa danh mục hiện tại (dựa trên URL)
 watch(
   [() => route.params.slug, groupedCategories], 
   ([currentSlug, groups]) => {
@@ -60,7 +59,6 @@ watch(
         activeGroup.value = targetGroup.name
       }
     } else if (!activeGroup.value && groups.length > 0) {
-      // Mở mặc định nhóm đầu tiên nếu đang ở trang chủ/chưa chọn gì
       activeGroup.value = groups[0].name
     }
   }, 
@@ -70,51 +68,71 @@ watch(
 const toggleGroup = (name) => {
   activeGroup.value = activeGroup.value === name ? '' : name
 }
+
+const closeMobileSidebar = () => {
+  isMobileSidebarOpen.value = false
+}
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+  <div class="max-w-7xl mx-auto px-4 py-6 md:py-8 flex flex-col md:flex-row gap-6 md:gap-8">
     
-    <aside class="w-full md:w-1/4 lg:w-1/5 flex-shrink-0">
-      <div class="sticky top-24">
-        <div class="bg-primary-600 text-white font-bold p-3 uppercase border-b border-primary-700 rounded-t shadow-sm">
-          Sản phẩm in ấn
+    <div class="md:hidden flex items-center justify-between bg-white p-4 rounded-2xl border border-red-100 shadow-sm z-50 relative">
+      <div class="flex items-center gap-2 text-red-600 font-black uppercase tracking-widest text-sm">
+        <Layers class="w-5 h-5" />
+        <span>Danh mục in ấn</span>
+      </div>
+      <button 
+        @click="isMobileSidebarOpen = !isMobileSidebarOpen" 
+        class="text-gray-500 hover:text-red-600 bg-red-50 p-2 rounded-xl transition-all active:scale-95"
+      >
+        <Menu v-if="!isMobileSidebarOpen" class="w-5 h-5 text-red-600" />
+        <X v-else class="w-5 h-5 text-red-600" />
+      </button>
+    </div>
+
+    <aside 
+      class="w-full md:w-1/4 lg:w-1/5 flex-shrink-0 transition-all duration-300 origin-top"
+      :class="isMobileSidebarOpen ? 'block' : 'hidden md:block'"
+    >
+      <div class="md:sticky md:top-24 space-y-4">
+        
+        <div class="hidden md:flex bg-red-600 text-white font-black p-4 uppercase tracking-widest border-b border-red-700 rounded-t-2xl shadow-sm items-center gap-2">
+          <Layers class="w-5 h-5" /> Sản phẩm in
         </div>
         
-        <div class="bg-white border text-sm border-gray-200 rounded-b shadow-sm overflow-hidden">
+        <div class="bg-white border border-gray-100 md:rounded-b-2xl md:rounded-t-none rounded-2xl shadow-sm overflow-hidden">
           <div v-if="store.loading" class="p-6 text-center flex flex-col items-center text-gray-400">
-            <div class="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-primary-600 mb-2"></div>
+            <div class="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-red-600 mb-2"></div>
             Đang tải...
           </div>
           
-          <div v-else class="divide-y divide-gray-100 max-h-[75vh] overflow-y-auto custom-scrollbar">
+          <div v-else class="divide-y divide-gray-50 max-h-[70vh] md:max-h-[75vh] overflow-y-auto custom-scrollbar">
             <div v-for="group in groupedCategories" :key="group.name">
               
               <button 
                 @click="toggleGroup(group.name)"
-                class="w-full px-4 py-3 text-left font-bold text-gray-800 hover:bg-gray-50 flex justify-between items-center focus:outline-none transition-colors"
-                :class="{ 'bg-gray-50 text-primary-700': activeGroup === group.name }"
+                class="w-full px-5 py-4 md:px-4 md:py-3 text-left font-black text-gray-800 hover:bg-gray-50 flex justify-between items-center focus:outline-none transition-colors"
+                :class="{ 'bg-red-50 text-red-600': activeGroup === group.name }"
               >
-                <span class="text-[13px] uppercase tracking-wider">{{ group.name }}</span>
-                <svg 
-                  class="w-4 h-4 text-gray-400 transition-transform duration-200"
-                  :class="{ 'rotate-180 text-primary-600': activeGroup === group.name }"
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
+                <span class="text-[11px] md:text-[13px] uppercase tracking-widest">{{ group.name }}</span>
+                <ChevronDown 
+                  class="w-4 h-4 text-gray-400 transition-transform duration-300"
+                  :class="{ 'rotate-180 text-red-600': activeGroup === group.name }"
+                />
               </button>
 
               <div 
                 v-show="activeGroup === group.name" 
-                class="bg-white pb-2"
+                class="bg-white pb-3 pt-1 border-t border-dashed border-red-100"
               >
                 <ul class="space-y-0.5">
                   <li v-for="category in group.items" :key="category.id">
                     <router-link 
                       :to="'/category/' + category.slug" 
-                      class="block px-4 py-2 hover:bg-primary-50 hover:text-primary-700 transition-all truncate text-gray-600 font-medium pl-6 border-l-4 border-transparent"
-                      active-class="bg-primary-50 text-primary-700 font-bold !border-primary-600"
+                      @click="closeMobileSidebar" 
+                      class="block px-6 py-2.5 hover:bg-red-50 hover:text-red-600 transition-all truncate text-gray-600 font-bold border-l-4 border-transparent text-[13px]"
+                      active-class="bg-red-50 text-red-600 font-black !border-red-600 shadow-sm"
                     >
                       {{ category.name }}
                     </router-link>
@@ -136,7 +154,7 @@ const toggleGroup = (name) => {
 </template>
 
 <style scoped>
-/* Làm đẹp thanh cuộn */
+/* Làm đẹp thanh cuộn trên PC & Mobile */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
 }
@@ -145,7 +163,7 @@ const toggleGroup = (name) => {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1; 
-  border-radius: 4px;
+  border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8; 
