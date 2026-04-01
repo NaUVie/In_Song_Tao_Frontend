@@ -1,26 +1,22 @@
 <script setup>
-import { onMounted, onUnmounted, computed, ref } from 'vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { useAppStore } from '../stores/app'
 import MainLayout from '../components/layout/MainLayout.vue'
-import { ArrowRight, LayoutGrid, Zap, Star, ShoppingCart, ShieldCheck, Clock } from 'lucide-vue-next'
 import axios from '@/utils/axios'
 
 const store = useAppStore()
 
-// --- DỮ LIỆU BANNER TỪ DATABASE ---
+// --- QUẢN LÝ BANNER ---
 const banners = ref([])
 const currentSlide = ref(0)
 let slideInterval = null
 
-// Tách banner theo vị trí (top, mid)
 const topBanners = computed(() => banners.value.filter(b => b.position === 'top'))
 const midBanner = computed(() => banners.value.find(b => b.position === 'mid'))
 
-// Gọi API lấy danh sách Banner
 const fetchBanners = async () => {
   try {
     const response = await axios.get('/banners')
-    // Chỉ lấy những banner đang được bật
     banners.value = response.data.filter(b => b.is_active)
   } catch (error) {
     console.error('Lỗi khi tải banner:', error)
@@ -42,18 +38,33 @@ onUnmounted(() => {
   if (slideInterval) clearInterval(slideInterval)
 })
 
-// --- CÁC LOGIC KHÁC GIỮ NGUYÊN ---
-const hotCategories = computed(() => {
-  if (!store.categories) return []
-  const hotSlugs = ['nhan-decal', 'bao-thu', 'danh-thiep', 'hop-giay']
-  return store.categories.filter(cat => hotSlugs.includes(cat.slug))
-})
+// --- XỬ LÝ LẤY DATA ĐÚNG TỪ DATABASE CỦA ÔNG ---
 
-const allFeaturedServices = computed(() => {
-  if (!store.categories) return []
-  const services = store.categories.flatMap(cat => cat.services || [])
-  return services.slice(0, 10) 
-})
+// Hàm đệ quy móc danh mục ra (quét sâu tận cùng ngõ hẻm)
+const findCategory = (categories, slug) => {
+  if (!categories || !categories.length) return null;
+  for (const cat of categories) {
+    if (cat.slug === slug) return cat;
+    const children = cat.children || cat.services || cat.subCategories; 
+    if (children && children.length > 0) {
+      const found = findCategory(children, slug);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// KHAI BÁO CÁC SLUG ĐỂ ĐƯA LÊN MẶT TIỀN (Lấy từ list ông gửi)
+const rootSlugs = ['bao-thu', 'danh-thiep', 'nhan-decal-cac-loai'];
+const danhThiepSlugs = ['card-so-luong-nhieu', 'card-so-luong-it', 'card-1-hop-khong-mang', 'card-1-hop-mang-bong'];
+const nhanDecalSlugs = ['in-nhan-tags', 'in-nhan-decal', 'decal-in-san', 'tem-bao-hanh-decal'];
+const loaiDecalSlugs = ['decal-nhua-trong', 'decal-nhua-duc', 'sticker-decal', 'decal-metalize-xi'];
+
+// NHÓM DATA (Dùng filter Boolean để lỡ có slug nào trong DB chưa có thì nó không bị lỗi)
+const rootCategories = computed(() => rootSlugs.map(slug => findCategory(store.categories, slug)).filter(Boolean))
+const danhThiepCategories = computed(() => danhThiepSlugs.map(slug => findCategory(store.categories, slug)).filter(Boolean))
+const nhanDecalCategories = computed(() => nhanDecalSlugs.map(slug => findCategory(store.categories, slug)).filter(Boolean))
+const loaiDecalCategories = computed(() => loaiDecalSlugs.map(slug => findCategory(store.categories, slug)).filter(Boolean))
 </script>
 
 <template>
@@ -82,33 +93,24 @@ const allFeaturedServices = computed(() => {
 
       <div class="max-w-[1150px] mx-auto px-4 md:px-0">
         
-        <div class="w-full border-t-2 border-dotted border-gray-300 my-6"></div>
+        <div class="w-full border-t-[2px] border-dotted border-[#ccc] my-[20px]"></div>
 
-        <div class="mb-10">
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <router-link 
-              v-for="cat in hotCategories" 
-              :key="cat.id"
-              :to="'/category/' + cat.slug" 
-              class="group flex flex-col items-center text-center px-2"
-            >
-              <div class="w-full flex justify-center mb-3">
-                <img 
-                  v-if="cat.image_url" 
-                  :src="cat.image_url" 
-                  class="w-[90%] max-w-[250px] h-auto object-contain transition-transform duration-300 group-hover:-translate-y-1" 
-                  :alt="cat.name"
-                />
-                <div v-else class="w-full aspect-square max-w-[250px] bg-gray-100 flex items-center justify-center text-slate-300 font-black text-7xl uppercase">
-                  {{ cat.name.charAt(0) }}
+        <div v-if="rootCategories.length > 0" class="mb-10">
+          <ul class="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-14">
+            <li v-for="cat in rootCategories" :key="cat.id" class="w-full text-center">
+              <router-link :to="'/category/' + cat.slug" class="block group">
+                <div class="w-full flex justify-center items-center mb-4">
+                  <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-[85%] max-w-[320px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
+                  <div v-else class="w-[85%] max-w-[320px] aspect-square bg-gray-50 flex items-center justify-center text-slate-300 font-black text-6xl border border-gray-100 rounded">
+                    {{ cat.name.charAt(0) }}
+                  </div>
                 </div>
-              </div>
-              
-              <h3 class="text-[#6d6e71] font-bold text-[15px] tracking-[2px] uppercase group-hover:text-red-600 transition-colors">
-                {{ cat.name }}
-              </h3>
-            </router-link>
-          </div>
+                <div class="mt-4 mx-2">
+                  <div class="text-[#6d6e71] tracking-[2px] text-[13pt] md:text-[14pt] mb-[5px] font-bold uppercase group-hover:text-black transition-colors">{{ cat.name }}</div>
+                </div>
+              </router-link>
+            </li>
+          </ul>
         </div>
 
         <div v-if="midBanner" class="w-full mb-10 text-center">
@@ -121,53 +123,81 @@ const allFeaturedServices = computed(() => {
           >
             <img :src="midBanner.image_url" :alt="midBanner.title || 'Mid Banner'" class="max-w-full h-auto" />
           </component>
+          <div class="w-full border-t-[2px] border-dotted border-[#ccc] my-[20px]"></div>
         </div>
+        
+        <div v-if="!midBanner" class="w-full border-t-[2px] border-dotted border-[#ccc] my-[20px]"></div>
 
-        <div class="w-full border-t-2 border-dotted border-gray-300 my-6"></div>
-
-        <div class="mb-12">
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-y-10 gap-x-4">
-            <router-link 
-              v-for="service in allFeaturedServices" 
-              :key="service.id"
-              :to="'/service/' + service.slug" 
-              class="group flex flex-col items-center text-center px-2"
-            >
-              <div class="w-full flex justify-center mb-3">
-                <img 
-                  v-if="service.image_url"
-                  :src="service.image_url"
-                  class="w-[90%] max-w-[200px] h-auto object-contain transition-transform duration-300 group-hover:-translate-y-1"
-                  :alt="service.name"
-                />
-                <div v-else class="w-full aspect-square max-w-[200px] bg-gray-100 flex items-center justify-center text-slate-300 font-black text-5xl">
-                  {{ service.name.charAt(0) }}
+        <div v-if="danhThiepCategories.length > 0">
+          <h2 class="text-center text-[#6d6e71] font-bold text-xl mb-6 tracking-[3px] uppercase">Hạng mục Danh Thiếp</h2>
+          <ul class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+            <li v-for="cat in danhThiepCategories" :key="cat.id" class="w-full text-center">
+              <router-link :to="'/category/' + cat.slug" class="block group">
+                <div class="w-full flex justify-center items-center mb-4">
+                  <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-[85%] max-w-[220px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
+                  <div v-else class="w-[85%] max-w-[220px] aspect-square bg-gray-50 flex items-center justify-center text-slate-300 font-black text-5xl border border-gray-100 rounded">{{ cat.name.charAt(0) }}</div>
                 </div>
-              </div>
-
-              <h3 class="text-[#6d6e71] font-bold text-[14px] tracking-[1.5px] uppercase group-hover:text-red-600 transition-colors line-clamp-2">
-                {{ service.name }}
-              </h3>
-            </router-link>
-          </div>
+                <div class="mt-2 mx-2">
+                  <div class="text-[#6d6e71] tracking-[1px] text-[11pt] font-bold uppercase group-hover:text-black transition-colors">{{ cat.name }}</div>
+                </div>
+              </router-link>
+            </li>
+          </ul>
         </div>
 
-        <div class="text-center mt-12 mb-8">
-          <router-link to="/services" class="text-[#6d6e71] text-[16px] tracking-[3px] uppercase font-semibold hover:text-red-600 transition-colors">
-            TẤT CẢ SẢN PHẨM &gt;&gt;
-          </router-link>
+        <div v-if="nhanDecalCategories.length > 0">
+          <div class="w-full border-t-[2px] border-dotted border-[#ccc] my-[20px]"></div>
+          <h2 class="text-center text-[#6d6e71] font-bold text-xl mb-6 tracking-[3px] uppercase">Nhãn & Tem Bảo Hành</h2>
+          <ul class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+            <li v-for="cat in nhanDecalCategories" :key="cat.id" class="w-full text-center">
+              <router-link :to="'/category/' + cat.slug" class="block group">
+                <div class="w-full flex justify-center items-center mb-4">
+                  <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-[85%] max-w-[220px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
+                  <div v-else class="w-[85%] max-w-[220px] aspect-square bg-gray-50 flex items-center justify-center text-slate-300 font-black text-5xl border border-gray-100 rounded">{{ cat.name.charAt(0) }}</div>
+                </div>
+                <div class="mt-2 mx-2">
+                  <div class="text-[#6d6e71] tracking-[1px] text-[11pt] font-bold uppercase group-hover:text-black transition-colors">{{ cat.name }}</div>
+                </div>
+              </router-link>
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="loaiDecalCategories.length > 0">
+          <div class="w-full border-t-[2px] border-dotted border-[#ccc] my-[20px]"></div>
+          <h2 class="text-center text-[#6d6e71] font-bold text-xl mb-6 tracking-[3px] uppercase">Decal Nhựa & Đặc Biệt</h2>
+          <ul class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+            <li v-for="cat in loaiDecalCategories" :key="cat.id" class="w-full text-center">
+              <router-link :to="'/category/' + cat.slug" class="block group">
+                <div class="w-full flex justify-center items-center mb-4">
+                  <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-[85%] max-w-[220px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
+                  <div v-else class="w-[85%] max-w-[220px] aspect-square bg-gray-50 flex items-center justify-center text-slate-300 font-black text-5xl border border-gray-100 rounded">{{ cat.name.charAt(0) }}</div>
+                </div>
+                <div class="mt-2 mx-2">
+                  <div class="text-[#6d6e71] tracking-[1px] text-[11pt] font-bold uppercase group-hover:text-black transition-colors">{{ cat.name }}</div>
+                </div>
+              </router-link>
+            </li>
+          </ul>
         </div>
 
       </div>
+
+      <div class="text-center text-[13pt] tracking-[3px] mt-10 mb-12">
+        <router-link to="/services" class="text-[#6d6e71] font-bold hover:text-black transition-colors uppercase">
+          TẤT CẢ SẢN PHẨM &gt;&gt;
+        </router-link>
+      </div>
+
+
     </div>
   </MainLayout>
 </template>
 
 <style scoped>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+ul, li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 </style>
