@@ -1,84 +1,69 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue' // 👉 THÊM watch
 import { useRoute } from 'vue-router'
 import PriceCalculator from '../components/PriceCalculator.vue'
 import MainLayout from '../components/layout/MainLayout.vue'
 import axios from '@/utils/axios'
+
 const route = useRoute()
 const service = ref(null)
 const loading = ref(true)
 
-onMounted(async () => {
+// 👉 TÁCH HÀM LẤY DATA RA ĐỂ GỌI ĐI GỌI LẠI ĐƯỢC
+const fetchService = async (slug) => {
+  if (!slug) return
+  loading.value = true
   try {
-   const response = await axios.get(`/services/${route.params.slug}`)
-    
-    console.log("Dữ liệu Backend trả về nè:", response.data)
-    
+    const response = await axios.get(`/services/${slug}`)
     service.value = response.data
   } catch (error) {
     console.error('Lỗi khi tải dịch vụ:', error)
+    service.value = null // Reset lại nếu lỗi (nhập sai URL)
   } finally {
     loading.value = false
+  }
+}
+
+// 1. Gọi lần đầu khi mới vào trang
+onMounted(() => {
+  fetchService(route.params.slug)
+})
+
+// 2. 👉 THEO DÕI URL: Nếu URL đổi (bấm vào icon Bế Tròn, Bo Góc...), lập tức load lại data!
+watch(() => route.params.slug, (newSlug) => {
+  if (newSlug) {
+    fetchService(newSlug)
   }
 })
 </script>
 
 <template>
   <MainLayout>
-    <div class="min-h-screen py-12 px-4 bg-gray-50/50">
+    <div class="bg-white min-h-screen pb-24 font-sans text-[#333333] text-[14px] overflow-x-hidden">
       
       <div v-if="loading" class="flex justify-center py-20">
-         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+         <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-100 border-t-[#4b8df8]"></div>
       </div>
 
-      <div v-else-if="service" class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div v-else-if="service" class="max-w-[1150px] mx-auto px-4 md:px-0 mt-6">
         
-        <div class="lg:col-span-2">
-          <nav class="flex text-sm text-gray-500 mb-8 gap-2">
-            <router-link to="/" class="hover:text-primary-600 transition-colors">Trang chủ</router-link>
-            <span>/</span>
-            <span class="text-gray-800 font-medium">{{ service.name }}</span>
-          </nav>
+        <ul class="flex items-center text-[13px] text-[#333333] mb-4 gap-2 bg-transparent">
+          <li><router-link to="/" class="hover:underline">Trang chủ</router-link></li>
+          <li>/</li>
+          <li><router-link to="/services" class="hover:underline">Sản phẩm in</router-link></li>
+          <li>/</li>
+          <li class="font-bold">{{ service.name }}</li>
+        </ul>
 
-          <h1 class="text-4xl font-extrabold text-gray-900 mb-6">{{ service.name }}</h1>
-          
-          <div v-if="service.image_url" class="mb-8 rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white flex justify-center p-4">
-            <img 
-              :src="service.image_url" 
-              :alt="service.name" 
-              class="w-full max-w-2xl h-auto object-contain max-h-[450px] rounded-xl" 
-              @error="$event.target.style.display='none'" 
-            />
-          </div>
+        <PriceCalculator :service="service" />
 
-          <div class="prose prose-primary max-w-none text-gray-600 leading-loose bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-            <p class="text-lg mb-8 leading-relaxed">{{ service.description || 'Chưa có mô tả cho dịch vụ này.' }}</p>
-            
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 mt-8">Quy cách in ấn</h2>
-            <ul class="space-y-3 list-disc pl-5">
-              <li>Kỹ thuật in: Offset/Kỹ thuật số chất lượng cao</li>
-              <li>Thời gian hoàn thành: 2-3 ngày làm việc</li>
-              <li>Giao hàng toàn quốc</li>
-            </ul>
-
-            <div class="mt-12 p-6 bg-primary-50 rounded-xl border border-primary-100 border-l-4">
-              <h3 class="font-bold text-primary-800 mb-2">Lưu ý khi đặt in</h3>
-              <p class="text-sm text-primary-700">Vui lòng kiểm tra kỹ file thiết kế (hệ màu CMYK, độ phân giải 300dpi) trước khi tải lên để đảm bảo chất lượng in tốt nhất.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="lg:col-span-1">
-          <PriceCalculator :service="service" />
-        </div>
-        
       </div>
 
-      <div v-else class="text-center py-20">
-         <h2 class="text-2xl font-bold text-gray-700 mb-2">Không tìm thấy dịch vụ</h2>
-         <p class="text-gray-500 mb-6">Dịch vụ bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
-         <router-link to="/" class="text-primary-600 font-bold hover:underline">Quay lại Trang chủ</router-link>
+      <div v-else class="text-center py-20 max-w-[1150px] mx-auto">
+         <h2 class="text-[18px] font-bold text-[#6d6e71] mb-2 uppercase tracking-[2px]">Không tìm thấy dịch vụ</h2>
+         <router-link to="/" class="text-[#4b8df8] font-bold hover:underline">Quay lại Trang chủ</router-link>
       </div>
+
     </div>
   </MainLayout>
 </template>

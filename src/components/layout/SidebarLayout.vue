@@ -7,7 +7,7 @@ import { Layers, Menu, X, ChevronDown } from 'lucide-vue-next'
 const store = useAppStore()
 const route = useRoute()
 const activeGroup = ref('')
-const isMobileSidebarOpen = ref(false) // Thêm biến quản lý nút 3 gạch
+const isMobileSidebarOpen = ref(false)
 
 onMounted(() => {
   if (store.categories.length === 0) {
@@ -15,46 +15,33 @@ onMounted(() => {
   }
 })
 
-// Danh sách nhóm tĩnh của bạn
-const categoryGroups = [
-  { name: 'Ấn phẩm Văn phòng', slugs: ['danh-thiep', 'bao-thu', 'bia-ho-so', 'giay-tieu-de', 'bieu-mau', 'ghi-chu', 'bia-dung-the-tu', 'bang-khen'] },
-  { name: 'Quảng cáo & Marketing', slugs: ['to-roi-to-gap', 'catalogue', 'banner-poster', 'voucher-coupon', 'standee-de-ban', 'quat', 'buu-anh', 'phieu-tich-diem'] },
-  { name: 'Tem Nhãn & Bao bì', slugs: ['hop-giay', 'tui-giay', 'nhan-decal', 'decal-giay', 'tem-bao-hanh', 'nhan-treo', 'nhan-co-chai', 'phieu-bao-hanh'] },
-  { name: 'F&B (Nhà hàng)', slugs: ['menu', 'de-lot-ly', 'giay-lot-ban-an', 've-giu-xe'] },
-  { name: 'Sự kiện & Lễ Tết', slugs: ['cuoi-hoi-su-kien', 'thiep-cuoi', 'bao-li-xi', 'lich', 'photobook'] },
-  { name: 'Dịch vụ Đặc biệt', slugs: ['thiet-ke-logo', 'in-nhanh', 'in-tren-nhua', 'inproof', 'color-chart'] }
-]
-
-// Xử lý gom nhóm và tìm các danh mục chưa được phân loại
+// Xử lý gom nhóm tự động dựa trên quan hệ cha-con (parent_id)
 const groupedCategories = computed(() => {
   if (!store.categories || store.categories.length === 0) return []
 
-  const matchedCategoryIds = new Set()
+  // 1. Lấy tất cả các danh mục gốc (không có parent_id)
+  const parents = store.categories.filter(cat => !cat.parent_id)
 
-  const groups = categoryGroups.map(group => {
-    const items = store.categories.filter(cat => {
-      if (group.slugs.includes(cat.slug)) {
-        matchedCategoryIds.add(cat.id)
-        return true
-      }
-      return false
-    })
-    return { ...group, items }
-  }).filter(group => group.items.length > 0)
-
-  const otherItems = store.categories.filter(cat => !matchedCategoryIds.has(cat.id))
-  if (otherItems.length > 0) {
-    groups.push({ name: 'Khác', items: otherItems })
-  }
-
-  return groups
+  // 2. Map các danh mục con vào đúng danh mục cha tương ứng
+  return parents.map(parent => {
+    return {
+      id: parent.id,
+      name: parent.name,
+      slug: parent.slug,
+      items: store.categories.filter(cat => cat.parent_id === parent.id)
+    }
+  })
 })
 
+// Mở group tương ứng khi load trang hoặc chuyển route
 watch(
   [() => route.params.slug, groupedCategories], 
   ([currentSlug, groups]) => {
     if (currentSlug && groups.length > 0) {
-      const targetGroup = groups.find(g => g.items.some(item => item.slug === currentSlug))
+      // Tìm group chứa slug hiện tại (có thể là slug của danh mục con HOẶC chính danh mục cha)
+      const targetGroup = groups.find(g => 
+        g.slug === currentSlug || g.items.some(item => item.slug === currentSlug)
+      )
       if (targetGroup && activeGroup.value !== targetGroup.name) {
         activeGroup.value = targetGroup.name
       }
@@ -108,37 +95,50 @@ const closeMobileSidebar = () => {
           </div>
           
           <div v-else class="divide-y divide-gray-50 max-h-[70vh] md:max-h-[75vh] overflow-y-auto custom-scrollbar">
-            <div v-for="group in groupedCategories" :key="group.name">
+            <div v-for="group in groupedCategories" :key="group.id">
               
-              <button 
-                @click="toggleGroup(group.name)"
-                class="w-full px-5 py-4 md:px-4 md:py-3 text-left font-black text-gray-800 hover:bg-gray-50 flex justify-between items-center focus:outline-none transition-colors"
-                :class="{ 'bg-red-50 text-red-600': activeGroup === group.name }"
-              >
-                <span class="text-[11px] md:text-[13px] uppercase tracking-widest">{{ group.name }}</span>
-                <ChevronDown 
-                  class="w-4 h-4 text-gray-400 transition-transform duration-300"
-                  :class="{ 'rotate-180 text-red-600': activeGroup === group.name }"
-                />
-              </button>
+              <template v-if="group.items.length > 0">
+                <button 
+                  @click="toggleGroup(group.name)"
+                  class="w-full px-5 py-4 md:px-4 md:py-3 text-left font-black text-gray-800 hover:bg-gray-50 flex justify-between items-center focus:outline-none transition-colors"
+                  :class="{ 'bg-red-50 text-red-600': activeGroup === group.name }"
+                >
+                  <span class="text-[11px] md:text-[13px] uppercase tracking-widest">{{ group.name }}</span>
+                  <ChevronDown 
+                    class="w-4 h-4 text-gray-400 transition-transform duration-300"
+                    :class="{ 'rotate-180 text-red-600': activeGroup === group.name }"
+                  />
+                </button>
 
-              <div 
-                v-show="activeGroup === group.name" 
-                class="bg-white pb-3 pt-1 border-t border-dashed border-red-100"
-              >
-                <ul class="space-y-0.5">
-                  <li v-for="category in group.items" :key="category.id">
-                    <router-link 
-                      :to="'/category/' + category.slug" 
-                      @click="closeMobileSidebar" 
-                      class="block px-6 py-2.5 hover:bg-red-50 hover:text-red-600 transition-all truncate text-gray-600 font-bold border-l-4 border-transparent text-[13px]"
-                      active-class="bg-red-50 text-red-600 font-black !border-red-600 shadow-sm"
-                    >
-                      {{ category.name }}
-                    </router-link>
-                  </li>
-                </ul>
-              </div>
+                <div 
+                  v-show="activeGroup === group.name" 
+                  class="bg-white pb-3 pt-1 border-t border-dashed border-red-100"
+                >
+                  <ul class="space-y-0.5">
+                    <li v-for="category in group.items" :key="category.id">
+                      <router-link 
+                        :to="'/category/' + category.slug" 
+                        @click="closeMobileSidebar" 
+                        class="block px-6 py-2.5 hover:bg-red-50 hover:text-red-600 transition-all truncate text-gray-600 font-bold border-l-4 border-transparent text-[13px]"
+                        active-class="bg-red-50 text-red-600 font-black !border-red-600 shadow-sm"
+                      >
+                        {{ category.name }}
+                      </router-link>
+                    </li>
+                  </ul>
+                </div>
+              </template>
+
+              <template v-else>
+                <router-link 
+                  :to="'/category/' + group.slug" 
+                  @click="closeMobileSidebar"
+                  class="block w-full px-5 py-4 md:px-4 md:py-3 text-left font-black text-gray-800 hover:bg-gray-50 transition-colors uppercase tracking-widest text-[11px] md:text-[13px]"
+                  active-class="bg-red-50 !text-red-600"
+                >
+                  {{ group.name }}
+                </router-link>
+              </template>
 
             </div>
           </div>
