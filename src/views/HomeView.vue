@@ -4,6 +4,17 @@ import { useAppStore } from '../stores/app'
 import MainLayout from '../components/layout/MainLayout.vue'
 import axios from '@/utils/axios'
 
+// --- THÊM HÀM XỬ LÝ LINK ẢNH ---
+const IMAGE_BASE_URL = 'https://in-song-tao-backend.onrender.com'
+
+const getImageUrl = (url) => {
+  if (!url) return ''
+  // Nếu đã có http/https (ảnh mạng, Cloudinary) thì giữ nguyên
+  if (url.startsWith('http')) return url
+  // Nếu là ảnh lưu trong server nội bộ (Render) thì nối url gốc vào
+  return `${IMAGE_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`
+}
+
 const store = useAppStore()
 
 // --- QUẢN LÝ BANNER ---
@@ -85,7 +96,7 @@ const loaiDecalCategories = computed(() => loaiDecalSlugs.map(slug => findCatego
               :href="banner.link || '#'"
               class="block w-full max-w-[1150px] mx-auto"
             >
-              <img :src="banner.image_url" :alt="banner.title || 'Slide'" class="w-full h-auto block object-cover" />
+              <img :src="getImageUrl(banner.image_url)" :alt="banner.title || 'Slide'" class="w-full h-auto block object-cover" />
             </component>
           </div>
         </div>
@@ -100,7 +111,7 @@ const loaiDecalCategories = computed(() => loaiDecalSlugs.map(slug => findCatego
             <li v-for="cat in rootCategories" :key="cat.id" class="w-full text-center">
               <router-link :to="'/category/' + cat.slug" class="block group">
                 <div class="w-full flex justify-center items-center mb-4">
-                  <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-[85%] max-w-[320px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
+                  <img v-if="cat.image_url" :src="getImageUrl(cat.image_url)" :alt="cat.name" class="w-[85%] max-w-[320px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
                   <div v-else class="w-[85%] max-w-[320px] aspect-square bg-gray-50 flex items-center justify-center text-slate-300 font-black text-6xl border border-gray-100 rounded">
                     {{ cat.name.charAt(0) }}
                   </div>
@@ -121,7 +132,7 @@ const loaiDecalCategories = computed(() => loaiDecalSlugs.map(slug => findCatego
             :href="midBanner.link || '#'"
             class="inline-block"
           >
-            <img :src="midBanner.image_url" :alt="midBanner.title || 'Mid Banner'" class="max-w-full h-auto" />
+            <img :src="getImageUrl(midBanner.image_url)" :alt="midBanner.title || 'Mid Banner'" class="max-w-full h-auto" />
           </component>
           <div class="w-full border-t-[2px] border-dotted border-[#ccc] my-[20px]"></div>
         </div>
@@ -134,7 +145,7 @@ const loaiDecalCategories = computed(() => loaiDecalSlugs.map(slug => findCatego
             <li v-for="cat in danhThiepCategories" :key="cat.id" class="w-full text-center">
               <router-link :to="'/category/' + cat.slug" class="block group">
                 <div class="w-full flex justify-center items-center mb-4">
-                  <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-[85%] max-w-[220px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
+                  <img v-if="cat.image_url" :src="getImageUrl(cat.image_url)" :alt="cat.name" class="w-[85%] max-w-[220px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
                   <div v-else class="w-[85%] max-w-[220px] aspect-square bg-gray-50 flex items-center justify-center text-slate-300 font-black text-5xl border border-gray-100 rounded">{{ cat.name.charAt(0) }}</div>
                 </div>
                 <div class="mt-2 mx-2">
@@ -152,7 +163,7 @@ const loaiDecalCategories = computed(() => loaiDecalSlugs.map(slug => findCatego
             <li v-for="cat in nhanDecalCategories" :key="cat.id" class="w-full text-center">
               <router-link :to="'/category/' + cat.slug" class="block group">
                 <div class="w-full flex justify-center items-center mb-4">
-                  <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-[85%] max-w-[220px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
+                  <img v-if="cat.image_url" :src="getImageUrl(cat.image_url)" :alt="cat.name" class="w-[85%] max-w-[220px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
                   <div v-else class="w-[85%] max-w-[220px] aspect-square bg-gray-50 flex items-center justify-center text-slate-300 font-black text-5xl border border-gray-100 rounded">{{ cat.name.charAt(0) }}</div>
                 </div>
                 <div class="mt-2 mx-2">
@@ -170,7 +181,7 @@ const loaiDecalCategories = computed(() => loaiDecalSlugs.map(slug => findCatego
             <li v-for="cat in loaiDecalCategories" :key="cat.id" class="w-full text-center">
               <router-link :to="'/category/' + cat.slug" class="block group">
                 <div class="w-full flex justify-center items-center mb-4">
-                  <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-[85%] max-w-[220px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
+                  <img v-if="cat.image_url" :src="getImageUrl(cat.image_url)" :alt="cat.name" class="w-[85%] max-w-[220px] aspect-square object-contain group-hover:-translate-y-2 transition-transform duration-300" />
                   <div v-else class="w-[85%] max-w-[220px] aspect-square bg-gray-50 flex items-center justify-center text-slate-300 font-black text-5xl border border-gray-100 rounded">{{ cat.name.charAt(0) }}</div>
                 </div>
                 <div class="mt-2 mx-2">
